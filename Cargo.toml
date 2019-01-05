@@ -1,0 +1,10 @@
+[package]
+name = "PEA3"
+version = "0.1.0"
+authors = ["Karol Kłusek <klusek@protonmail.com>"]
+
+[dependencies]
+rand = "0.3"
+time = "0.1.38"
+tsplib = "0.1.0"
+permutohedron = "0.2"
