@@ -73,6 +73,8 @@ pub fn solve(
             let children_pair = generate_children_pair(&parents_population, mutation_probability, crossing_type.clone());
             children_population.push(children_pair[0].clone());
             children_population.push(children_pair[1].clone());
+            //TODO: erase this print
+            print_utils::print_matrix(&children_pair);
         }
 
         // Wyznaczenie nowej populacji, wybierając najlepsze osobniki z populacji dzieci i rodziców
@@ -323,6 +325,9 @@ fn generate_children_pair(
     // Losowy wybór osobników z populacji pierwotnej
     // Będą oni rodzicami pary osobników nowej populacji
     let mut parents_pair: Vec<Vec<i32>> = generate_parents_pair(&parents_population);
+    //TODO: erase this print
+    println!("Parents_pair: ");
+    print_utils::print_matrix(&parents_pair);
 
     // Następnie następuje krzyżowanie osobników
     match crossing_type {
@@ -419,9 +424,6 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
 //                vertex_neighbour_map[i][j] = 0;
 //        }
 //    }
-
-    print_utils::print_matrix(parents_pair);
-    print_utils::print_result(32, child.clone(), 64);
 
     //TODO fix the return
     return child;

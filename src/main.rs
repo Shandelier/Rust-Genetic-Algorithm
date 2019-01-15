@@ -21,8 +21,11 @@ fn main() {
         println!();
         println!("Wybierz funkcję:");
         println!("1. Wczytaj plik z grafem");
+        println!("10. Wczytaj plik rbg323.atsp");
         println!("2. Wygeneruj losowy graf");
         println!("3. Algorytm genetyczny");
+        println!("30. Algorytm genetyczny z parametrami: i:{0} pop:{1}\
+         pary:{2} mut:{3} czas:{4} typX:{5}", 10, 20, 1, 0.01f32, 120, 1);
         println!("0. Wyjście");
         println!("Wybór: ");
 
@@ -68,6 +71,24 @@ fn main() {
                     solve_genetic(&mut matrix)
                 }
             }
+
+            10 => {
+                let mut file_name = "data/rbg323.atsp";
+
+                matrix = file_reader::read_any_file(String::from(file_name.trim()));
+                println!("Wczytano plik data/rbg323.atsp ");
+            }
+
+            30 => {
+                solve_genetic_now(&mut matrix,
+                                  10,
+                                  20,
+                                  1,
+                                  0.01f32,
+                                  120,
+                                  1)
+            }
+
             _ => println!("Niepoprawna wartość!"),
         }
     }
@@ -161,6 +182,39 @@ fn main() {
 
 
         // Rozwiązanie z parametrami
+        genetic_algorithm::solve(
+            matrix,
+            iterations,
+            population_size,
+            children_pairs_size,
+            mutation_probability,
+            max_time,
+            crossing_type_integer
+        )
+    }
+
+    fn solve_genetic_now(mut matrix: &mut Vec<Vec<i32>>,
+                         iterations: i32,
+                         population_size: i32,
+                         children_pairs_size: i32,
+                         mutation_probability: f32,
+                         max_time: i32,
+                         crossing_type_integer: i32)
+    {
+        println!("Wykonywanie algorytmu dla parametrow.\
+         iteracje: {0}\
+         populacja: {1}\
+         pary dzieci: {2}\
+         szansa mutacji: {3}\
+         czas: {4}\
+         typ krzyzowania: {5}",
+                 iterations,
+                 population_size,
+                 children_pairs_size,
+                 mutation_probability,
+                 max_time,
+                 crossing_type_integer);
+
         genetic_algorithm::solve(
             matrix,
             iterations,
