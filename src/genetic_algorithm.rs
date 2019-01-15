@@ -73,8 +73,6 @@ pub fn solve(
             let children_pair = generate_children_pair(&parents_population, mutation_probability, crossing_type.clone());
             children_population.push(children_pair[0].clone());
             children_population.push(children_pair[1].clone());
-            //TODO: erase this print
-            print_utils::print_matrix(&children_pair);
         }
 
         // Wyznaczenie nowej populacji, wybierając najlepsze osobniki z populacji dzieci i rodziców
@@ -325,20 +323,18 @@ fn generate_children_pair(
     // Losowy wybór osobników z populacji pierwotnej
     // Będą oni rodzicami pary osobników nowej populacji
     let mut parents_pair: Vec<Vec<i32>> = generate_parents_pair(&parents_population);
-    //TODO: erase this print
-    println!("Parents_pair: ");
-    print_utils::print_matrix(&parents_pair);
 
     // Następnie następuje krzyżowanie osobników
     match crossing_type {
         CrossingType::PMX => {
             children_pair.push(cross_single_child_pmx(&parents_pair));
-            //TODO shuffle parents (parent[0] <--> parent[1]; parent[2] <--> parent[3];...)
+            rand::thread_rng().shuffle(&mut parents_pair);
             children_pair.push(cross_single_child_pmx(&parents_pair));
         },
 
         CrossingType::EX => {
             children_pair.push(cross_single_child_ex(&parents_pair));
+            rand::thread_rng().shuffle(&mut parents_pair);
             children_pair.push(cross_single_child_ex(&parents_pair));
         },
 
@@ -397,7 +393,6 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>
             if swap_index == first_cross_point {
                 swap_index = second_cross_point.clone();
             }
-
             child[swap_index] = parents_pair[1][i].clone();
             swap_index = swap_index + 1;
         }
@@ -409,21 +404,49 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>
 fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     -> Vec<i32> {
     // Rozmiar grafu i dziecka
-    //TODO: prawdopodobnie oboje rodzicow to ten sam osobnik
     let graph_size: usize = parents_pair[0].len() as usize;
     // Nowa para dzieci
     let mut child: Vec<i32> = vec![0; graph_size];
     // Obliczenie ilości elementów w permutacji
-    // TWorzenie mapy połączeń w grafie
+    // TWorzenie mapy (tablicy) połączeń w grafie
     // wiersze odpowiadają numerom wierzchołków
     let mut vertex_neighbour_map: Vec<Vec<i32>>;
+    let mut vertex_position: usize;
 
+    // Tworzenie mapy sasiedztwa
+    // for do przechodzenia po wierszach mapy sąsiedztwa
+    for vertex in graph_size {
+        // for do wpisywania kolejnych elementów w wierszach mapy
+        for parent_index in parents_pair.len() {
+            // znalezienie pozycji elementu o zadanej wartości w ścieżce
+            vertex_position = parents_pair[parent_index].iter().position(vertex);
+            // mozliwe są skrajne przypadki –
+            // element bedzie na ostatniej lub pierwszej pozycji macierzy,
+            // tutaj je obsługujemy
+            match vertex_position {
 
-//    for i in graph_size {
-//        for j in 4 {
-//                vertex_neighbour_map[i][j] = 0;
-//        }
-//    }
+                0 => {
+                    //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
+                    // 'lewy sasiad, potem prawy sasiad'
+                    // 2 * parent_index as i32 sluzy do wpisywania na pozycje 2 i 3
+                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size];
+                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][1];
+                }
+
+                graph_size => {
+                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size - 1];
+                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][0];
+                }
+
+                _ => {
+                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][vertex_position - 1];
+                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][vertex_position + 1];
+                }
+            }
+        }
+    }
+
+    //TODO: usuwanie elementow z acierzy sasiedztwa
 
     //TODO fix the return
     return child;
