@@ -404,6 +404,7 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>
 fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     -> Vec<i32> {
     // Rozmiar grafu i dziecka
+    //TODO: prawdopodobnie oboje rodzicow to ten sam osobnik
     let graph_size: usize = parents_pair[0].len() as usize;
     // Nowa para dzieci
     let mut child: Vec<i32> = vec![0; graph_size];
