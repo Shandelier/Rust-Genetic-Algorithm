@@ -118,6 +118,48 @@ fn main() {
         );
         let max_time: i32 = max_time.trim().parse().expect("Błędna wartość");
 
+        // typ krzyzowania
+        let mut crossing_type_integer: String = String::new();
+        loop {
+            println!("Typ mutacji:");
+            println!("[1] PMX");
+            println!("[2] EX");
+            io::stdin().read_line(&mut crossing_type_integer).expect(
+                "Błąd wejścia/wyjścia",
+            );
+            // jesli uzytkownik wprowadzi prawidlowy parametr
+            if crossing_type_integer.trim() == "1"
+                || crossing_type_integer.trim() == "2"
+            {
+                break;
+            }
+            // ...jesli nie
+            print!("Bledny typ mutacji 😡");
+        }
+
+        let crossing_type_integer: i32 = crossing_type_integer.trim().parse().expect(
+            "Błędna wartość"
+        );
+
+        //TODO: mutation type
+//        // typ mutowania
+//        while {
+//            println!("Typ mutacji:");
+//            println!("[1] PMX");
+//            println!("[2] EX");
+//            let mut mutation_type_integer: String = String::new();
+//            io::stdin().read_line(&mut mutation_type_integer).expect(
+//                "Błąd wejścia/wyjścia",
+//            );
+//            if (mutation_type_integer == "1"
+//                || mutation_type_integer == "2")
+//
+//
+//        }
+//
+//        let mutation_type_integer: i32 = iterations.trim().parse().expect("Błędna wartość");
+
+
         // Rozwiązanie z parametrami
         genetic_algorithm::solve(
             matrix,
@@ -126,6 +168,7 @@ fn main() {
             children_pairs_size,
             mutation_probability,
             max_time,
+            crossing_type_integer
         )
     }
 }

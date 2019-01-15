@@ -2,6 +2,14 @@ extern crate time;
 extern crate rand;
 
 use self::rand::Rng as random_number_generator;
+//TODO erase print_utils
+use print_utils;
+
+#[derive(Clone, Copy)]
+enum CrossingType {
+    PMX,
+    EX,
+}
 
 // Podstawowa metoda zawierająca całość algorytmu
 pub fn solve(
@@ -11,7 +19,18 @@ pub fn solve(
     children_pairs_size: i32,
     mutation_probability: f32,
     max_time_in_seconds: i32,
+    crossing_type_integer: i32
 ) {
+    // Zamiana crossing_type na typ enum
+    let crossing_type;
+    match crossing_type_integer {
+        1 => crossing_type = CrossingType::PMX,
+        2 => crossing_type = CrossingType::EX,
+        _ => {
+            print!("Bledny typ mutacji");
+            crossing_type = CrossingType::PMX;
+        },
+    }
 
     // Początkowe rozwiązanie ma maksymalną wartość
     let mut best_solution: i32 = <i32>::max_value();
@@ -51,7 +70,7 @@ pub fn solve(
 
         // Wyznaczenie dzieci jako populacji tworzonej z populacji rodziców
         for _i in 0..children_pairs_size {
-            let children_pair = generate_children_pair(&parents_population, mutation_probability);
+            let children_pair = generate_children_pair(&parents_population, mutation_probability, crossing_type.clone());
             children_population.push(children_pair[0].clone());
             children_population.push(children_pair[1].clone());
         }
@@ -215,10 +234,7 @@ fn find_parents_in_population(
     // Wyliczenie wartości funkcji przystosowania dla wszystkich osobników populacji
     // Zwiększenie sumy całkowitej funkcji przystosowania
     for i in 0..population_size.clone() {
-        permutation_evaluation_values.push(permutation_evaluation_value(
-            &matrix,
-            &population[i as usize],
-        ));
+        permutation_evaluation_values.push(permutation_evaluation_value(&matrix, &population[i as usize],));
         permutations_evaluation_sum = permutations_evaluation_sum +
             permutation_evaluation_values[i as usize] as i64;
     }
@@ -299,6 +315,7 @@ fn permutation_evaluation_value(matrix: &Vec<Vec<i32>>,
 fn generate_children_pair(
     parents_population: &Vec<Vec<i32>>,
     mutation_probability: f32,
+    crossing_type: CrossingType
 ) -> Vec<Vec<i32>> {
     // Tablica przechowująca dwie permutacje, odpowiadające
     // Parze dzieci (osobników kolejnej populacji)
@@ -306,12 +323,27 @@ fn generate_children_pair(
     // Losowy wybór osobników z populacji pierwotnej
     // Będą oni rodzicami pary osobników nowej populacji
     let mut parents_pair: Vec<Vec<i32>> = generate_parents_pair(&parents_population);
+
     // Następnie następuje krzyżowanie osobników
-    children_pair.push(cross_single_child_pmx(&parents_pair));
-    children_pair.push(cross_single_child_pmx(&parents_pair));
+    match crossing_type {
+        CrossingType::PMX => {
+            children_pair.push(cross_single_child_pmx(&parents_pair));
+            //TODO shuffle parents (parent[0] <--> parent[1]; parent[2] <--> parent[3];...)
+            children_pair.push(cross_single_child_pmx(&parents_pair));
+        },
+
+        CrossingType::EX => {
+            children_pair.push(cross_single_child_ex(&parents_pair));
+            children_pair.push(cross_single_child_ex(&parents_pair));
+        },
+
+        _ => print!("Problem in generate_children_pair"),
+    }
+
     // I próba mutacji otrzymanych dzieci
     children_pair[0] = attempt_child_mutation(children_pair[0].clone(), mutation_probability);
     children_pair[1] = attempt_child_mutation(children_pair[1].clone(), mutation_probability);
+
     println!("  Syn: {:?}", &children_pair[0]);
     println!("  Córka: {:?}", &children_pair[1]);
 
@@ -366,6 +398,31 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>
         }
     }
 
+    return child;
+}
+
+fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
+    -> Vec<i32> {
+    // Rozmiar grafu i dziecka
+    let graph_size: usize = parents_pair[0].len() as usize;
+    // Nowa para dzieci
+    let mut child: Vec<i32> = vec![0; graph_size];
+    // Obliczenie ilości elementów w permutacji
+    // TWorzenie mapy połączeń w grafie
+    // wiersze odpowiadają numerom wierzchołków
+    let mut vertex_neighbour_map: Vec<Vec<i32>>;
+
+
+//    for i in graph_size {
+//        for j in 4 {
+//                vertex_neighbour_map[i][j] = 0;
+//        }
+//    }
+
+    print_utils::print_matrix(parents_pair);
+    print_utils::print_result(32, child.clone(), 64);
+
+    //TODO fix the return
     return child;
 }
 
