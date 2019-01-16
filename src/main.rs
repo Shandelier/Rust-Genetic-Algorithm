@@ -86,7 +86,7 @@ fn main() {
                                   1,
                                   0.01f32,
                                   120,
-                                  1)
+                                  2)
             }
 
             _ => println!("Niepoprawna wartość!"),
@@ -179,6 +179,8 @@ fn main() {
 //        }
 //
 //        let mutation_type_integer: i32 = iterations.trim().parse().expect("Błędna wartość");
+
+
 
 
         // Rozwiązanie z parametrami

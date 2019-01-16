@@ -404,7 +404,8 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>
 fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     -> Vec<i32> {
     // Rozmiar grafu i dziecka
-    let graph_size: usize = parents_pair[0].len() as usize;
+    let graph_size: usize = (parents_pair[0].len() - 1) as usize;
+    print!("Dlugosc tego ciagu to: {}", graph_size);
     // Nowa para dzieci
     let mut child: Vec<i32> = vec![0; graph_size];
     // Obliczenie ilości elementów w permutacji
@@ -415,7 +416,7 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
 
     // Tworzenie mapy sasiedztwa
     // for do przechodzenia po wierszach mapy sąsiedztwa
-    for vertex in 0..graph_size {
+    for vertex in (0..graph_size + 1) {
         // for do wpisywania kolejnych elementów w wierszach mapy
         for parent_index in 0..parents_pair.len() {
             // znalezienie pozycji elementu o zadanej wartości w ścieżce
@@ -446,6 +447,9 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
                     vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][vertex_position + 1];
                 }
             }
+
+            print_utils::print_matrix(&vertex_neighbour_map);
+
         }
     }
 
