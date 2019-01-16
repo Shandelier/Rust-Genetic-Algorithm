@@ -410,16 +410,19 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     // Obliczenie ilości elementów w permutacji
     // TWorzenie mapy (tablicy) połączeń w grafie
     // wiersze odpowiadają numerom wierzchołków
-    let mut vertex_neighbour_map: Vec<Vec<i32>>;
+    let mut vertex_neighbour_map: Vec<Vec<i32>> = Vec::new();
     let mut vertex_position: usize;
 
     // Tworzenie mapy sasiedztwa
     // for do przechodzenia po wierszach mapy sąsiedztwa
-    for vertex in graph_size {
+    for vertex in 0..graph_size {
         // for do wpisywania kolejnych elementów w wierszach mapy
-        for parent_index in parents_pair.len() {
+        for parent_index in 0..parents_pair.len() {
             // znalezienie pozycji elementu o zadanej wartości w ścieżce
-            vertex_position = parents_pair[parent_index].iter().position(vertex);
+            vertex_position = parents_pair[parent_index]
+                .iter()
+                .position(|&x| x == vertex as i32)
+                .unwrap();
             // mozliwe są skrajne przypadki –
             // element bedzie na ostatniej lub pierwszej pozycji macierzy,
             // tutaj je obsługujemy
