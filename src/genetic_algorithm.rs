@@ -333,8 +333,10 @@ fn generate_children_pair(
         },
 
         CrossingType::EX => {
+            print_utils::print_matrix(&parents_pair);
             children_pair.push(cross_single_child_ex(&parents_pair));
             rand::thread_rng().shuffle(&mut parents_pair);
+            print_utils::print_matrix(&parents_pair);
             children_pair.push(cross_single_child_ex(&parents_pair));
         },
     }
@@ -405,11 +407,11 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     let graph_size: usize = (parents_pair[0].len() - 1) as usize;
     println!("Dlugosc tego ciagu to: {}", graph_size.clone());
     // Nowa para dzieci
-    let mut child: Vec<i32> = vec![0; graph_size.clone()];
+    let mut child: Vec<i32> = parents_pair[0].clone();
     // Obliczenie ilości elementów w permutacji
     // TWorzenie mapy (tablicy) połączeń w grafie
     // wiersze odpowiadają numerom wierzchołków
-    let mut vertex_neighbour_map: Vec<Vec<i32>> = vec![Vec::new(); 1 + graph_size.clone()];
+    let mut vertex_neighbour_map: Vec<Vec<i32>> = vec![Vec::new(); 1 + graph_size];
     let mut vertex_position: usize;
 
 
