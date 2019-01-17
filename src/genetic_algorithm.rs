@@ -333,10 +333,8 @@ fn generate_children_pair(
         },
 
         CrossingType::EX => {
-            print_utils::print_matrix(&parents_pair);
             children_pair.push(cross_single_child_ex(&parents_pair));
             rand::thread_rng().shuffle(&mut parents_pair);
-            print_utils::print_matrix(&parents_pair);
             children_pair.push(cross_single_child_ex(&parents_pair));
         },
     }
@@ -405,7 +403,6 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     -> Vec<i32> {
     // Rozmiar grafu i dziecka
     let graph_size: usize = (parents_pair[0].len() - 1) as usize;
-    println!("Dlugosc tego ciagu to: {}", graph_size.clone());
     // Nowa para dzieci
     let mut child: Vec<i32> = parents_pair[0].clone();
     // Obliczenie ilości elementów w permutacji
@@ -414,13 +411,15 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     let mut vertex_neighbour_map: Vec<Vec<i32>> = vec![Vec::new(); 1 + graph_size];
     let mut vertex_position: usize;
 
+    let mut check_duplicates: i32 = 0;
+
 
     // Tworzenie mapy sasiedztwa
     // for do przechodzenia po wierszach mapy sąsiedztwa
     for vertex in 0..graph_size + 1 {
         //println!("vertex: {}", vertex);
         // for do wpisywania kolejnych elementów w wierszach mapy
-        for parent_index in 0..parents_pair.len() {
+        for parent_index in 0..2 {
             //println!("parent: {}", parent_index);
             // znalezienie pozycji elementu o zadanej wartości w ścieżce
             vertex_position = parents_pair[parent_index]
@@ -431,33 +430,31 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
             // mozliwe są skrajne przypadki –
             // element bedzie na ostatniej lub pierwszej pozycji macierzy,
             // tutaj je obsługujemy
-            match vertex_position {
-
-                0 => {
-                    //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
-                    // 'lewy sasiad, potem prawy sasiad'
-                    // 2 * parent_index as i32 sluzy do wpisywania na pozycje 2 i 3
-                    //println!("Dupa 0");
-                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size].clone());
-                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][1].clone());
+            if vertex_position == 0 {
+                //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
+                // 'lewy sasiad, potem prawy sasiad'
+                check_duplicates = parents_pair[parent_index][graph_size].clone();
+                if vertex_neighbour_map.iter().any(|&x| x == check_duplicates) {
+                    
                 }
-
-                graph_size => {
-                    //println!("Dupa ostatnia");
-                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1].clone());
-                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][0].clone());
-                }
-
-                _ => {
-                    //println!("Dupa {}", vertex_position);
-                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1].clone());
-                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1].clone());
-                }
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size].clone());
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][1].clone());
+            }
+            else if vertex_position == graph_size {
+                //println!("Dupa ostatnia");
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1].clone());
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][0].clone());
+            }
+            else {
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1].clone());
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1].clone());
             }
         }
     }
 
-//    print_utils::print_matrix(&vertex_neighbour_map);
+
+
+    //print_utils::print_matrix(&vertex_neighbour_map);
     //TODO: usuwanie elementow z acierzy sasiedztwa
 
     //TODO fix the return
