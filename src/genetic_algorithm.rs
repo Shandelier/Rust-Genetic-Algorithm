@@ -13,7 +13,7 @@ enum CrossingType {
 
 // Podstawowa metoda zawierająca całość algorytmu
 pub fn solve(
-    matrix: &mut Vec<Vec<i32>>,
+    matrix: & Vec<Vec<i32>>,
     iterations: i32,
     population_size: i32,
     children_pairs_size: i32,
@@ -38,10 +38,10 @@ pub fn solve(
     let mut current_best_solution: i32 = <i32>::max_value();
 
     // Liczba miast
-    let mut number_of_cities: i32 = matrix.len() as i32;
+    let number_of_cities: i32 = matrix.len() as i32;
 
     // Tablica zawierająca uszeregowaną listę wszystkich wierzchołków w postaci tablicy
-    let mut nodes: Vec<i32> = (0..number_of_cities).collect();
+    let nodes: Vec<i32> = (0..number_of_cities).collect();
 
     // Populacja jest dwuwymiarową tablicą permutacji
     // Populacja startowa jest generowana losowo
@@ -50,7 +50,7 @@ pub fn solve(
 
     // Podbnie zbiór rodziców jest tablicą dwuwymiarową osobników wybranych z populacji
     // Zakładamy, że jest on połową całej populacji
-    let mut parents_population_size: i32 = population_size / 2;
+    let parents_population_size: i32 = population_size / 2;
     let mut parents_population: Vec<Vec<i32>> = Vec::new();
 
     // Kolejny zbiór będzie przechowywał dzieci otrzymane w wyniku mutacji
@@ -302,9 +302,9 @@ fn permutation_evaluation_value(matrix: &Vec<Vec<i32>>,
 ) -> i32 {
 
     // Koszt ścieżki zawartej w danej permutacji
-    let mut path_value: i32 = permutation_value(&matrix, &permutation);
+    let path_value: i32 = permutation_value(&matrix, &permutation);
     // Maksymalna wartość kosztu
-    let mut max_path_value: i32 = <i32>::max_value();
+    let  max_path_value: i32 = <i32>::max_value();
     // Zwracana wartość jest różnicą pomiędzy maksimum a otrzymanym kosztem
     // Im większa wartość, tym lepszy wynik funkcji przystosowania
     return max_path_value - path_value;
@@ -337,16 +337,14 @@ fn generate_children_pair(
             rand::thread_rng().shuffle(&mut parents_pair);
             children_pair.push(cross_single_child_ex(&parents_pair));
         },
-
-        _ => print!("Problem in generate_children_pair"),
     }
 
     // I próba mutacji otrzymanych dzieci
     children_pair[0] = attempt_child_mutation(children_pair[0].clone(), mutation_probability);
     children_pair[1] = attempt_child_mutation(children_pair[1].clone(), mutation_probability);
 
-    println!("  Syn: {:?}", &children_pair[0]);
-    println!("  Córka: {:?}", &children_pair[1]);
+//    println!("  Syn: {:?}", &children_pair[0]);
+//    println!("  Córka: {:?}", &children_pair[1]);
 
     return children_pair;
 }
@@ -405,28 +403,29 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     -> Vec<i32> {
     // Rozmiar grafu i dziecka
     let graph_size: usize = (parents_pair[0].len() - 1) as usize;
-    println!("Dlugosc tego ciagu to: {}", graph_size);
+    println!("Dlugosc tego ciagu to: {}", graph_size.clone());
     // Nowa para dzieci
-    let mut child: Vec<i32> = vec![0; graph_size];
+    let mut child: Vec<i32> = vec![0; graph_size.clone()];
     // Obliczenie ilości elementów w permutacji
     // TWorzenie mapy (tablicy) połączeń w grafie
     // wiersze odpowiadają numerom wierzchołków
-    let mut vertex_neighbour_map: Vec<Vec<i32>> = vec![Vec::new(); 1 + graph_size];
+    let mut vertex_neighbour_map: Vec<Vec<i32>> = vec![Vec::new(); 1 + graph_size.clone()];
     let mut vertex_position: usize;
 
 
     // Tworzenie mapy sasiedztwa
     // for do przechodzenia po wierszach mapy sąsiedztwa
-    for vertex in (0..graph_size + 1) {
-        println!("vertex: {}", vertex);
+    for vertex in 0..graph_size + 1 {
+        //println!("vertex: {}", vertex);
         // for do wpisywania kolejnych elementów w wierszach mapy
         for parent_index in 0..parents_pair.len() {
-            println!("parent: {}", parent_index);
+            //println!("parent: {}", parent_index);
             // znalezienie pozycji elementu o zadanej wartości w ścieżce
             vertex_position = parents_pair[parent_index]
                 .iter()
                 .position(|&x| x == vertex as i32)
-                .unwrap();
+                .unwrap()
+                .clone();
             // mozliwe są skrajne przypadki –
             // element bedzie na ostatniej lub pierwszej pozycji macierzy,
             // tutaj je obsługujemy
@@ -436,22 +435,19 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
                     //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
                     // 'lewy sasiad, potem prawy sasiad'
                     // 2 * parent_index as i32 sluzy do wpisywania na pozycje 2 i 3
-//                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size];
-//                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][1];
+                    //println!("Dupa 0");
                     vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size].clone());
                     vertex_neighbour_map[vertex].push(parents_pair[parent_index][1].clone());
                 }
 
                 graph_size => {
-//                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size - 1];
-//                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][0];
+                    //println!("Dupa ostatnia");
                     vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1].clone());
                     vertex_neighbour_map[vertex].push(parents_pair[parent_index][0].clone());
                 }
 
                 _ => {
-//                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][vertex_position - 1];
-//                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][vertex_position + 1];
+                    //println!("Dupa {}", vertex_position);
                     vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1].clone());
                     vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1].clone());
                 }
@@ -459,7 +455,7 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
         }
     }
 
-    print_utils::print_matrix(&vertex_neighbour_map);
+//    print_utils::print_matrix(&vertex_neighbour_map);
     //TODO: usuwanie elementow z acierzy sasiedztwa
 
     //TODO fix the return
@@ -473,6 +469,8 @@ fn generate_parents_pair(parents_population: &Vec<Vec<i32>>
     let mut parents_pair: Vec<Vec<i32>> = Vec::new();
     let mut father_index: usize = 0;
     let mut mother_index: usize = 0;
+    //TODO: wybieranie rodzicow z najlepszych osobnikow
+
     // Pętla zapobiega wylosowaniu dwa razy tego samego osobnika
     // Ponieważ w takim wypadku algorytm nie ma sensu
     while father_index == mother_index {
@@ -497,7 +495,7 @@ fn swap_elements_in_permutation(
     // Nowa populacja, będąca klonem starej
     let mut new_population: Vec<i32> = permutation.clone();
     // Swap elementów w nowej populacji
-    let mut saved_element: i32 = permutation[first_element_index];
+    let  saved_element: i32 = permutation[first_element_index];
     new_population[first_element_index] = permutation[second_element_index];
     new_population[second_element_index] = saved_element;
     // Populacja po zamianie zwracana jako wynik

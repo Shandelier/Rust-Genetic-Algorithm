@@ -25,7 +25,7 @@ fn main() {
         println!("2. Wygeneruj losowy graf");
         println!("3. Algorytm genetyczny");
         println!("30. Algorytm genetyczny z parametrami: i:{0} pop:{1}\
-         pary:{2} mut:{3} czas:{4} typX:{5}", 10, 20, 1, 0.01f32, 120, 1);
+         pary:{2} mut:{3} czas:{4} typX:{5}", 3, 20, 10, 0.01f32, 120, 1);
         println!("0. Wyjście");
         println!("Wybór: ");
 
@@ -74,6 +74,7 @@ fn main() {
 
             10 => {
                 let mut file_name = "data/rbg323.atsp";
+//                let mut file_name = "data/br17.atsp";
 
                 matrix = file_reader::read_any_file(String::from(file_name.trim()));
                 println!("Wczytano plik data/rbg323.atsp ");
@@ -81,9 +82,9 @@ fn main() {
 
             30 => {
                 solve_genetic_now(&mut matrix,
-                                  10,
+                                  3,
                                   20,
-                                  1,
+                                  10,
                                   0.01f32,
                                   120,
                                   2)
@@ -195,7 +196,7 @@ fn main() {
         )
     }
 
-    fn solve_genetic_now(mut matrix: &mut Vec<Vec<i32>>,
+    fn solve_genetic_now(matrix: & Vec<Vec<i32>>,
                          iterations: i32,
                          population_size: i32,
                          children_pairs_size: i32,
