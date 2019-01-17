@@ -412,6 +412,7 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     let mut vertex_position: usize;
 
     let mut check_duplicates: i32 = 0;
+    let mut duplicate_position: usize = 0;
 
 
     // Tworzenie mapy sasiedztwa
@@ -433,12 +434,37 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
             if vertex_position == 0 {
                 //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
                 // 'lewy sasiad, potem prawy sasiad'
-                check_duplicates = parents_pair[parent_index][graph_size].clone();
-                if vertex_neighbour_map.iter().any(|&x| x == check_duplicates) {
-                    
+                // LEWY
+                check_duplicates = parents_pair[parent_index][graph_size].clone();  // let do sprawdzania czy jest juz pewne value w wektroze
+                duplicate_position = vertex_neighbour_map.iter().position(|&x| x == check_duplicates).unwrap().clone(); // let do sprawdzania na jakiej pozycji jest to value
+                if duplicate_position.is_some() { // jesli .position() zwrocilo cokolwek poza None to tu wchodzi
+                    if check_duplicates != 0 {
+                        vertex_neighbour_map[vertex][duplicate_position] = vertex_neighbour_map[vertex][duplicate_position] - 2 * vertex_neighbour_map[vertex][duplicate_position];
+                    }
+                    if check_duplicates == 0 {
+                        vertex_neighbour_map[vertex][duplicate_position] = i32::MAX;
+                    }
+
+                } else {
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size].clone());
                 }
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size].clone());
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][1].clone());
+
+                // PRAWY
+                check_duplicates = parents_pair[parent_index][graph_size].clone();
+                duplicate_position = vertex_neighbour_map.iter().position(|&x| x == check_duplicates).unwrap().clone();
+                if duplicate_position.is_some() {
+                    if check_duplicates != 0 {
+                        vertex_neighbour_map[vertex][duplicate_position] = vertex_neighbour_map[vertex][duplicate_position] - 2 * vertex_neighbour_map[vertex][duplicate_position];
+                    }
+                    if check_duplicates == 0 {
+                        vertex_neighbour_map[vertex][duplicate_position] = i32::MAX;
+                    }
+
+                } else {
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][1].clone());
+                }
+
+
             }
             else if vertex_position == graph_size {
                 //println!("Dupa ostatnia");
