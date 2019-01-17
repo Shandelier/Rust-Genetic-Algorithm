@@ -405,20 +405,23 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     -> Vec<i32> {
     // Rozmiar grafu i dziecka
     let graph_size: usize = (parents_pair[0].len() - 1) as usize;
-    print!("Dlugosc tego ciagu to: {}", graph_size);
+    println!("Dlugosc tego ciagu to: {}", graph_size);
     // Nowa para dzieci
     let mut child: Vec<i32> = vec![0; graph_size];
     // Obliczenie ilości elementów w permutacji
     // TWorzenie mapy (tablicy) połączeń w grafie
     // wiersze odpowiadają numerom wierzchołków
-    let mut vertex_neighbour_map: Vec<Vec<i32>> = Vec::new();
+    let mut vertex_neighbour_map: Vec<Vec<i32>> = vec![Vec::new(); 1 + graph_size];
     let mut vertex_position: usize;
+
 
     // Tworzenie mapy sasiedztwa
     // for do przechodzenia po wierszach mapy sąsiedztwa
     for vertex in (0..graph_size + 1) {
+        println!("vertex: {}", vertex);
         // for do wpisywania kolejnych elementów w wierszach mapy
         for parent_index in 0..parents_pair.len() {
+            println!("parent: {}", parent_index);
             // znalezienie pozycji elementu o zadanej wartości w ścieżce
             vertex_position = parents_pair[parent_index]
                 .iter()
@@ -433,26 +436,30 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
                     //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
                     // 'lewy sasiad, potem prawy sasiad'
                     // 2 * parent_index as i32 sluzy do wpisywania na pozycje 2 i 3
-                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size];
-                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][1];
+//                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size];
+//                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][1];
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size].clone());
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][1].clone());
                 }
 
                 graph_size => {
-                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size - 1];
-                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][0];
+//                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][graph_size - 1];
+//                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][0];
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1].clone());
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][0].clone());
                 }
 
                 _ => {
-                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][vertex_position - 1];
-                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][vertex_position + 1];
+//                    vertex_neighbour_map[vertex][0 + 2 * parent_index] = parents_pair[parent_index][vertex_position - 1];
+//                    vertex_neighbour_map[vertex][1 + 2 * parent_index] = parents_pair[parent_index][vertex_position + 1];
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1].clone());
+                    vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1].clone());
                 }
             }
-
-            print_utils::print_matrix(&vertex_neighbour_map);
-
         }
     }
 
+    print_utils::print_matrix(&vertex_neighbour_map);
     //TODO: usuwanie elementow z acierzy sasiedztwa
 
     //TODO fix the return
