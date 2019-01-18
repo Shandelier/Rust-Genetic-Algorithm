@@ -455,18 +455,21 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     let mut dup_value: i32;
     let mut dup_position: Option<usize>;
     let mut dup_random: Option<usize>;
+    let mut dup_found: bool = false;
     // zmienna do losowania wierzcholkow
     let mut random_position: i32;
     // wybrano najlepszy wierzcholek do drogi
     let mut champion_chosen: bool = false;
     // macierz krtkosci sciezki
     let mut shortest: i32;
-    let mut position_of_shortest: usize;
+    let mut position_of_shortest: usize = 666;
     // wybieranie drogi do puki nie wypelnilismy calej macierzy potomka
-    while child.len() < parents_pair[0].len() + 1 {
-
+    loop {
         // dołączenie wierzchołka do drogi
         child.push(selected_vertex.clone());
+        if child.len() == parents_pair[0].len() {
+            break;
+        }
         // nie wybrano w tej iteracji najlepszego wierzcholka
         champion_chosen = false;
 
@@ -475,7 +478,12 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
             dup_position = vertex_neighbour_map[vertex].iter().position(|&x| x == selected_vertex);
             if dup_position.is_some() {
                 vertex_neighbour_map[vertex].remove(dup_position.unwrap());
+                dup_position = vertex_neighbour_map[vertex].iter().position(|&x| x == selected_vertex);
+                if dup_position.is_some() {
+                    vertex_neighbour_map[vertex].remove(dup_position.unwrap());
+                }
             }
+            dup_position = None;
         }
 
         // wybranie następnego wierzchołka
@@ -487,53 +495,44 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
                 if dup_random.is_none() {
                     selected_vertex = random_position;
                     champion_chosen = true;
+                    dup_random = None;
                     break;
                 }
             }
         }
 
         else if vertex_neighbour_map[selected_vertex as usize].len() == 1 && !champion_chosen {
-            selected_vertex = vertex_neighbour_map[selected_vertex as usize][0];
+            selected_vertex = vertex_neighbour_map[selected_vertex as usize][0].clone();
         }
 
-        else if vertex_neighbour_map[selected_vertex as usize].len() >= 2 && !champion_chosen {
-            //TODO: wybierz wierzcholek zduplikowany
-            for collumn in 0..vertex_neighbour_map[selected_vertex as usize].len() {
-                for element in collumn + 1..vertex_neighbour_map[selected_vertex as usize].len() {
-                    //TODO dodac wyjscie gdy nie ma takiego wierzcholka
-                    dup_position = vertex_neighbour_map[selected_vertex as usize].iter().position(|&x| x == element as i32);
-                    if dup_position.is_some() {
-                        selected_vertex = dup_position.unwrap() as i32;
+        else if vertex_neighbour_map[selected_vertex as usize].len() as i32 >= 2 && !champion_chosen {
+            for collumn in 0..vertex_neighbour_map[selected_vertex as usize].len() - 1 {
+                for element in collumn..vertex_neighbour_map[selected_vertex as usize].len() - 1 {
+                    if vertex_neighbour_map[selected_vertex as usize][collumn] == vertex_neighbour_map[selected_vertex as usize][element + 1] {
+                        selected_vertex = vertex_neighbour_map[selected_vertex as usize][collumn].clone();
                         champion_chosen = true;
                         break;
                     }
                 }
-                if champion_chosen {
-                    break;
-                }
+                if champion_chosen { break; }
             }
             // koniec szukania duplikatow
 
             if !champion_chosen {
                 // szukaie wierzcholka o najkrotszej liscie
-                shortest = i32::MAX;
-                for collumn in 0..vertex_neighbour_map[selected_vertex as usize] {
-                    if shortest > vertex_neighbour_map[vertex_neighbour_map[selected_vertex][collumn] as usize].len() {
+                shortest = i32::max_value();
+                for collumn in 0..vertex_neighbour_map[selected_vertex as usize].len() {
+                    if shortest > vertex_neighbour_map[vertex_neighbour_map[selected_vertex as usize][collumn] as usize].len() as i32 {
                         position_of_shortest = collumn;
+
                     }
                 }
-
+                selected_vertex = vertex_neighbour_map[selected_vertex as usize][position_of_shortest].clone();
                 // wybranie wierzcholka o najkrotszej liscie sasiadow
-                selected_vertex = vertex_neighbour_map[selected_vertex][position_of_shortest];
             }
         }
     }
 
-
-    print_utils::print_matrix(&vertex_neighbour_map);
-    //TODO: usuwanie elementow z acierzy sasiedztwa
-
-    //TODO fix the return
     return child;
 }
 

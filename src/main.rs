@@ -73,7 +73,7 @@ fn main() {
             }
 
             10 => {
-                let mut file_name = "data/br17.atsp";
+                let mut file_name = "data/rbg323.atsp";
 //                let mut file_name = "data/br17.atsp";
 
                 matrix = file_reader::read_any_file(String::from(file_name.trim()));
@@ -82,9 +82,9 @@ fn main() {
 
             30 => {
                 solve_genetic_now(&mut matrix,
-                                  3,
-                                  20,
                                   10,
+                                  50,
+                                  25,
                                   0.01f32,
                                   120,
                                   2)
