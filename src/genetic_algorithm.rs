@@ -43,6 +43,9 @@ pub fn solve(
     // Tablica zawierająca uszeregowaną listę wszystkich wierzchołków w postaci tablicy
     let nodes: Vec<i32> = (0..number_of_cities).collect();
 
+    // Czas start
+    let timer_start = time::PreciseTime::now();
+
     // Populacja jest dwuwymiarową tablicą permutacji
     // Populacja startowa jest generowana losowo
     let mut population: Vec<Vec<i32>> =
@@ -59,7 +62,7 @@ pub fn solve(
 
     // Pętla wykonująca całość algorytmu
     // Napisana wg kroków podanych na wikipedii XD
-    for _iteration in 0..iterations {
+    for iteration in 0..iterations {
         // Określenie populacji, która będzie rodzicami dla kolejnego pokolenia
         parents_population = find_parents_in_population(
             &population,
@@ -88,10 +91,19 @@ pub fn solve(
         // Obliczenie kosztu ścieżki najlepszego elementu w populacji
         current_best_solution = get_best_population_element_value(&matrix, &population);
 
+        print!("[{}] {}", &iteration, &current_best_solution);
+
         // Zapisanie wyniku, jeżeli jest lepszy niż aktualny
         if current_best_solution < best_solution {
             best_solution = current_best_solution.clone();
             best_element = population[0].clone();
+            print!(" - poprawa!");
+        }
+        println!();
+
+        if timer_start.to(time::PreciseTime::now()).num_seconds() >= max_time_in_seconds as i64 {
+            println!("Zakonczono z powodu przekroczenia czasu: ");
+            break;
         }
     }
 
@@ -159,13 +171,12 @@ fn regenerate_population(
 
     // Populacje wejściowe należy posortować wg wartości funkcji przystosowania
     current_population.sort_by(|x, y| {
-        permutation_evaluation_value(matrix, x).cmp(&permutation_evaluation_value(matrix, y))
+        path_evaluation_value(matrix, x).cmp(&path_evaluation_value(matrix, y))
     });
 
     current_population_children.sort_by(|x, y| {
-        permutation_evaluation_value(matrix, x).cmp(&permutation_evaluation_value(matrix, y))
+        path_evaluation_value(matrix, x).cmp(&path_evaluation_value(matrix, y))
     });
-
 
     // Iteracja po całym docelowym rozmiarze populacji
     for _i in 0..population_size {
@@ -191,18 +202,13 @@ fn regenerate_population(
         // Jeżeli obie populacje zawierają jeszcze elementy
         // Wybieramy ten, o korzystniejszej wartości funkcji przystosowania
         // Można sprawdzać po indeksach tablicy, bo wcześniej je sortowaliśmy
-        if permutation_evaluation_value(
-            matrix,
-            &current_population_children[current_population_children.len() - 1],
-        ) <
-            permutation_evaluation_value(
-                matrix,
-                &current_population[current_population.len() - 1],
-            )
+        if path_evaluation_value(matrix, &current_population_children[current_population_children.len() - 1])
+            < path_evaluation_value(matrix, &current_population[current_population.len() - 1])
         {
             new_population.push(current_population[current_population.len() - 1].clone());
             current_population.pop();
-        } else {
+        }
+        else {
             new_population.push(
                 current_population_children[current_population_children.len() - 1]
                     .clone(),
@@ -223,7 +229,7 @@ fn find_parents_in_population(
     parents_population_size: &i32,
     matrix: &Vec<Vec<i32>>,
 ) -> Vec<Vec<i32>> {
-    println!("Wyszukiwanie rodziców w populacji...");
+    //print!("Wyszukiwanie rodziców w populacji... ");
     // Populacja która będzie przechowywać wybranych rodziców
     let mut selected_parents: Vec<Vec<i32>> = Vec::new();
     // Suma całkowita wszystkich wartości funkcji przystosowania populacji
@@ -234,10 +240,11 @@ fn find_parents_in_population(
     // Wyliczenie wartości funkcji przystosowania dla wszystkich osobników populacji
     // Zwiększenie sumy całkowitej funkcji przystosowania
     for i in 0..population_size.clone() {
-        permutation_evaluation_values.push(permutation_evaluation_value(&matrix, &population[i as usize],));
+        permutation_evaluation_values.push(path_evaluation_value(&matrix, &population[i as usize],));
         permutations_evaluation_sum = permutations_evaluation_sum +
             permutation_evaluation_values[i as usize] as i64;
     }
+
     // Zmienna przechowująca losowy współczynnik określający funkcję celu
     let mut random_target_value: i64;
 
@@ -268,15 +275,15 @@ fn find_parents_in_population(
             }
         }
     }
-
+    //println!("Wybrano {} rodziców.", selected_parents.len());
     // Zwracana wartość jest tablicą zawierającą osobniki spełniające
     // Kryteria do bycia rodzicem
     return selected_parents;
 }
 
 // Funkcja obliczająca koszt ścieżki
-fn permutation_value(matrix: &Vec<Vec<i32>>,
-                     permutation: &Vec<i32>
+fn path_value(matrix: &Vec<Vec<i32>>,
+              permutation: &Vec<i32>
 ) -> i32 {
 
     // Początkowy koszt ścieżki to 0
@@ -297,12 +304,12 @@ fn permutation_value(matrix: &Vec<Vec<i32>>,
 }
 
 // Funkcja wyliczająca wartość funkcji przystosowania dla wybranego elementu populacji
-fn permutation_evaluation_value(matrix: &Vec<Vec<i32>>,
-                                permutation: &Vec<i32>
+fn path_evaluation_value(matrix: &Vec<Vec<i32>>,
+                         permutation: &Vec<i32>
 ) -> i32 {
 
     // Koszt ścieżki zawartej w danej permutacji
-    let path_value: i32 = permutation_value(&matrix, &permutation);
+    let path_value: i32 = path_value(&matrix, &permutation);
     // Maksymalna wartość kosztu
     let  max_path_value: i32 = <i32>::max_value();
     // Zwracana wartość jest różnicą pomiędzy maksimum a otrzymanym kosztem
@@ -328,13 +335,13 @@ fn generate_children_pair(
     match crossing_type {
         CrossingType::PMX => {
             children_pair.push(cross_single_child_pmx(&parents_pair));
-            rand::thread_rng().shuffle(&mut parents_pair);
+            parents_pair.swap(0, 1);
             children_pair.push(cross_single_child_pmx(&parents_pair));
         },
 
         CrossingType::EX => {
             children_pair.push(cross_single_child_ex(&parents_pair));
-            rand::thread_rng().shuffle(&mut parents_pair);
+            parents_pair.swap(0, 1);
             children_pair.push(cross_single_child_ex(&parents_pair));
         },
     }
@@ -462,7 +469,7 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     let mut champion_chosen: bool = false;
     // macierz krtkosci sciezki
     let mut shortest: i32;
-    let mut position_of_shortest: usize = 666;
+    let mut position_of_shortest: usize = 666666;
     // wybieranie drogi do puki nie wypelnilismy calej macierzy potomka
     loop {
         // dołączenie wierzchołka do drogi
@@ -589,7 +596,7 @@ fn attempt_child_mutation(permutation: Vec<i32>,
     // Sprawdzenie czy wylosowana liczba mieści się w zakresie podobieństwa
     // Określonym przez użytkownika
     if random_float <= mutation_probability {
-        println!("Nastąpiła mutacja dziecka {:?}", &permutation);
+        //println!("Nastąpiła mutacja dziecka {:?}", &permutation);
 
         // Zmienne przechowujące indeksy elementów do zamiany
         let mut first_element_index: usize = 0;
@@ -634,5 +641,5 @@ fn generate_randomized_target_value(permutation_evaluation_sum: &i64
 fn get_best_population_element_value(matrix: &Vec<Vec<i32>>,
                                      population: &Vec<Vec<i32>>,
 ) -> i32 {
-    return <i32>::max_value() - permutation_evaluation_value(&matrix, &population[0])
+    return <i32>::max_value() - path_evaluation_value(&matrix, &population[0])
 }
