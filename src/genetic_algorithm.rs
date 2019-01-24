@@ -11,6 +11,14 @@ enum CrossingType {
     EX,
 }
 
+#[derive(Clone, Copy)]
+enum MutationType {
+    SWAP,
+    GREAT_SWAP,
+    GREAT_INSERT,
+    INSERT,
+}
+
 // Podstawowa metoda zawierająca całość algorytmu
 pub fn solve(
     matrix: & Vec<Vec<i32>>,
@@ -19,7 +27,8 @@ pub fn solve(
     children_pairs_size: i32,
     mutation_probability: f32,
     max_time_in_seconds: i32,
-    crossing_type_integer: i32
+    crossing_type_integer: i32,
+    mutation_type_integer: i32,
 ) {
     // Zamiana crossing_type na typ enum
     let crossing_type;
@@ -27,9 +36,21 @@ pub fn solve(
         1 => crossing_type = CrossingType::PMX,
         2 => crossing_type = CrossingType::EX,
         _ => {
-            print!("Bledny typ mutacji");
+            println!("Bledny typ krzyzowania!");
             crossing_type = CrossingType::PMX;
         },
+    }
+
+    let mutation_type;
+    match mutation_type_integer {
+        1 => mutation_type = MutationType::SWAP,
+        2 => mutation_type = MutationType::INSERT,
+        10 => mutation_type = MutationType::GREAT_SWAP,
+        20 => mutation_type = MutationType::GREAT_INSERT,
+        _ => {
+            println!("Bledny typ krzyzowania!");
+            mutation_type = MutationType::SWAP;
+        }
     }
 
     // Początkowe rozwiązanie ma maksymalną wartość
@@ -73,7 +94,7 @@ pub fn solve(
 
         // Wyznaczenie dzieci jako populacji tworzonej z populacji rodziców
         for _i in 0..children_pairs_size {
-            let children_pair = generate_children_pair(&parents_population, mutation_probability, crossing_type.clone());
+            let children_pair = generate_children_pair(&parents_population, mutation_probability, crossing_type, mutation_type);
             children_population.push(children_pair[0].clone());
             children_population.push(children_pair[1].clone());
         }
@@ -322,7 +343,8 @@ fn path_evaluation_value(matrix: &Vec<Vec<i32>>,
 fn generate_children_pair(
     parents_population: &Vec<Vec<i32>>,
     mutation_probability: f32,
-    crossing_type: CrossingType
+    crossing_type: CrossingType,
+    mutation_type: MutationType
 ) -> Vec<Vec<i32>> {
     // Tablica przechowująca dwie permutacje, odpowiadające
     // Parze dzieci (osobników kolejnej populacji)
@@ -347,8 +369,29 @@ fn generate_children_pair(
     }
 
     // I próba mutacji otrzymanych dzieci
-    children_pair[0] = attempt_child_mutation(children_pair[0].clone(), mutation_probability);
-    children_pair[1] = attempt_child_mutation(children_pair[1].clone(), mutation_probability);
+
+
+    match mutation_type {
+        MutationType::SWAP => {
+            children_pair[0] = try_mutation_swap(children_pair[0].clone(), mutation_probability);
+            children_pair[1] = try_mutation_swap(children_pair[1].clone(), mutation_probability);
+        },
+
+        MutationType::INSERT => {
+            children_pair[0] = try_mutation_insert(children_pair[0].clone(), mutation_probability);
+            children_pair[1] = try_mutation_insert(children_pair[1].clone(), mutation_probability);
+        },
+
+        MutationType::GREAT_INSERT => {
+            children_pair[0] = try_great_mutation_swap(children_pair[0].clone(), mutation_probability);
+            children_pair[1] = try_great_mutation_swap(children_pair[1].clone(), mutation_probability);
+        }
+
+        MutationType::GREAT_SWAP => {
+            children_pair[0] = try_great_mutation_swap(children_pair[0].clone(), mutation_probability);
+            children_pair[1] = try_great_mutation_swap(children_pair[1].clone(), mutation_probability);
+        }
+    }
 
 //    println!("  Syn: {:?}", &children_pair[0]);
 //    println!("  Córka: {:?}", &children_pair[1]);
@@ -586,8 +629,8 @@ fn swap_elements_in_permutation(
 // Metoda wykonuje mutację danego osobnika
 // Zamieniając elementu, jeżeli spełniony zostanie
 // Warunek określony przez prawdopodobieństwo
-fn attempt_child_mutation(permutation: Vec<i32>,
-                          mutation_probability: f32
+fn try_mutation_swap(permutation: Vec<i32>,
+                     mutation_probability: f32
 ) -> Vec<i32> {
 
     // Losowa zmienna z zakresu 0..1
@@ -616,6 +659,143 @@ fn attempt_child_mutation(permutation: Vec<i32>,
             second_element_index,
         );
     } else {
+        // Jeżeli warunek prawdopodobieństwa nie został spełniony
+        // Zwracana jest oryginalnie sprawdzana permutacja
+        return permutation;
+    }
+}
+
+fn try_great_mutation_swap(mut permutation: Vec<i32>,
+                     mutation_probability: f32
+) -> Vec<i32> {
+
+    // Losowa zmienna z zakresu 0..1
+    let random_float: f32 = rand::thread_rng().next_f32();
+
+    // Sprawdzenie czy wylosowana liczba mieści się w zakresie podobieństwa
+    // Określonym przez użytkownika
+    if random_float <= mutation_probability {
+        //println!("Nastąpiła mutacja dziecka {:?}", &permutation);
+
+        // Zmienne przechowujące indeksy elementów do zamiany
+        let mut first_element_index: usize = 0;
+        let mut second_element_index: usize = 0;
+        // ile elementow w czymstam
+        let mutation_attempts = permutation.len() / 30;
+
+        for iter in 0..mutation_attempts {
+            first_element_index = 0;
+            second_element_index = 0;
+            // Losowanie elementów do momentu otrzymania dwóch róznych
+            // Zapobiega niepoprawnej mutacji
+            while first_element_index == second_element_index {
+                first_element_index = rand::thread_rng().gen_range(1, permutation.len());
+                second_element_index = rand::thread_rng().gen_range(1, permutation.len());
+            }
+
+            permutation = swap_elements_in_permutation(
+                &permutation,
+                first_element_index,
+                second_element_index,
+            );
+        }
+
+        // Zwracana jest permutacja po zamianie elementów
+        // Na określonych wcześniej indeksach
+        return permutation;
+
+    } else {
+        // Jeżeli warunek prawdopodobieństwa nie został spełniony
+        // Zwracana jest oryginalnie sprawdzana permutacja
+        return permutation;
+    }
+}
+
+fn try_mutation_insert(mut permutation: Vec<i32>,
+                       mutation_probability: f32
+) -> Vec<i32> {
+    // Losowa zmienna z zakresu 0..1
+    let random_float: f32 = rand::thread_rng().next_f32();
+
+    // Sprawdzenie czy wylosowana liczba mieści się w zakresie podobieństwa
+    // Określonym przez użytkownika
+    if random_float <= mutation_probability {
+        //println!("Nastąpiła mutacja dziecka {:?}", &permutation);
+
+        // Zmienne przechowujące indeksy elementów do zamiany
+        //wierzcholek przenoszony
+        let mut element_index: usize = 0;
+        //wartość elementu
+        let mut element_value: i32 = 0;
+        //wierzcholek za ktory przenoszę
+        let mut insert_index: usize = 0;
+        // Losowanie elementów do momentu otrzymania dwóch róznych
+        // Zapobiega niepoprawnej mutacji
+        while element_index == insert_index
+            || element_index == insert_index + 1 {
+            element_index = rand::thread_rng().gen_range(1, permutation.len());
+            insert_index = rand::thread_rng().gen_range(1, permutation.len());
+        }
+
+        //gdy element jest przed miejscem umieszczenia
+        if element_index < insert_index {
+            element_value = permutation.remove(element_index);
+            insert_index -= 1;
+            permutation.insert(insert_index, element_value);
+        }
+        else if element_index > insert_index {
+            element_value = permutation.remove(element_index);
+            permutation.insert(insert_index, element_value);
+        }
+
+        return permutation
+    } else {
+        // Jeżeli warunek prawdopodobieństwa nie został spełniony
+        // Zwracana jest oryginalnie sprawdzana permutacja
+        return permutation;
+    }
+
+
+}fn try_great_mutation_insert(mut permutation: Vec<i32>,
+                       mutation_probability: f32
+) -> Vec<i32> {
+    // Losowa zmienna z zakresu 0..1
+    let random_float: f32 = rand::thread_rng().next_f32();
+    // Zmienne przechowujące indeksy elementów do zamiany
+    //wierzcholek przenoszony
+    let mut element_index: usize = 0;
+    //wartość elementu
+    let mut element_value: i32 = 0;
+    //wierzcholek za ktory przenoszę
+    let mut insert_index: usize = 0;
+
+    // Sprawdzenie czy wylosowana liczba mieści się w zakresie podobieństwa
+    // Określonym przez użytkownika
+    if random_float <= mutation_probability {
+        let mutation_attempts = permutation.len() / 30;
+        for iter in 0..mutation_attempts {
+            // Losowanie elementów do momentu otrzymania dwóch róznych
+            // Zapobiega niepoprawnej mutacji
+            while element_index == insert_index
+                || element_index == insert_index + 1 {
+                element_index = rand::thread_rng().gen_range(1, permutation.len());
+                insert_index = rand::thread_rng().gen_range(1, permutation.len());
+            }
+
+            //gdy element jest przed miejscem umieszczenia
+            if element_index < insert_index {
+                element_value = permutation.remove(element_index);
+                insert_index -= 1;
+                permutation.insert(insert_index, element_value);
+            }
+            else if element_index > insert_index {
+                element_value = permutation.remove(element_index);
+                permutation.insert(insert_index, element_value);
+            }
+        }
+        return permutation;
+    }
+    else {
         // Jeżeli warunek prawdopodobieństwa nie został spełniony
         // Zwracana jest oryginalnie sprawdzana permutacja
         return permutation;

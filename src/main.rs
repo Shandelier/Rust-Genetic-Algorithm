@@ -87,7 +87,8 @@ fn main() {
                                   25,
                                   0.01f32,
                                   120,
-                                  2)
+                                  2,
+                                  1)
             }
 
             _ => println!("Niepoprawna wartość!"),
@@ -163,24 +164,31 @@ fn main() {
             "Błędna wartość"
         );
 
-        //TODO: mutation type
-//        // typ mutowania
-//        while {
-//            println!("Typ mutacji:");
-//            println!("[1] PMX");
-//            println!("[2] EX");
-//            let mut mutation_type_integer: String = String::new();
-//            io::stdin().read_line(&mut mutation_type_integer).expect(
-//                "Błąd wejścia/wyjścia",
-//            );
-//            if (mutation_type_integer == "1"
-//                || mutation_type_integer == "2")
-//
-//
-//        }
-//
-//        let mutation_type_integer: i32 = iterations.trim().parse().expect("Błędna wartość");
+        // typ mutowania
+        let mut mutation_type_integer: String = String::new();
+        loop {
+            println!("Typ mutacji:");
+            println!("[1] SWAP");
+            println!("[10] GREAT SWAP");
+            println!("[2] INSERT");
+            println!("[20] GREAT INSERT");
+            io::stdin().read_line(&mut mutation_type_integer).expect(
+                "Błąd wejścia/wyjścia",
+            );
+            if (mutation_type_integer.trim() == "1"
+                || mutation_type_integer.trim() == "2"
+                || mutation_type_integer.trim() == "10"
+                || mutation_type_integer.trim() == "20")
+            {
+                break;
+            }
+            // ...jesli nie
+            print!("Bledny typ mutacji 😡");
+        }
 
+        let mutation_type_integer: i32 = mutation_type_integer.trim().parse().expect(
+            "Błędna wartość"
+        );
 
 
 
@@ -192,7 +200,8 @@ fn main() {
             children_pairs_size,
             mutation_probability,
             max_time,
-            crossing_type_integer
+            crossing_type_integer,
+            mutation_type_integer
         )
     }
 
@@ -202,7 +211,8 @@ fn main() {
                          children_pairs_size: i32,
                          mutation_probability: f32,
                          max_time: i32,
-                         crossing_type_integer: i32)
+                         crossing_type_integer: i32,
+                         mutation_type_integer: i32)
     {
         println!("Wykonywanie algorytmu dla parametrow.\
          iteracje: {0}\
@@ -210,13 +220,15 @@ fn main() {
          pary dzieci: {2}\
          szansa mutacji: {3}\
          czas: {4}\
-         typ krzyzowania: {5}",
+         typ krzyzowania: {5},
+         typ mutowania: {6}",
                  iterations,
                  population_size,
                  children_pairs_size,
                  mutation_probability,
                  max_time,
-                 crossing_type_integer);
+                 crossing_type_integer,
+                 mutation_type_integer);
 
         genetic_algorithm::solve(
             matrix,
@@ -225,7 +237,8 @@ fn main() {
             children_pairs_size,
             mutation_probability,
             max_time,
-            crossing_type_integer
+            crossing_type_integer,
+            mutation_type_integer
         )
     }
 }
