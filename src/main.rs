@@ -6,10 +6,10 @@ mod genetic_algorithm;
 use std::io;
 
 fn main() {
-    println!();
-    println!("Projektowanie Efektywnych Algorytmów - Zadanie 3");
-    println!("Problem komiwojażera (TSP)");
-    println!("Karol Kłusek, 235082");
+    eprintln!();
+    eprintln!("Projektowanie Efektywnych Algorytmów - Zadanie 3");
+    eprintln!("Problem komiwojażera (TSP)");
+    eprintln!("Karol Kłusek, 235082");
 
     //Zmienna przechowująca graf w postaci macierzowej
     let mut matrix: Vec<Vec<i32>> = Vec::new();
@@ -17,16 +17,15 @@ fn main() {
     loop {
         let mut selected_number = String::new();
 
-        println!();
-        println!("Wybierz funkcję:");
-        println!("1. Wczytaj plik z grafem");
-        println!("10. Wczytaj plik rbg323.atsp");
-        println!("2. Wygeneruj losowy graf");
-        println!("3. Algorytm genetyczny");
-        println!("30. Algorytm genetyczny z parametrami: i:{0} pop:{1}\
-         pary:{2} mut:{3} czas:{4} typX:{5}", 3, 20, 10, 0.01f32, 120, 1);
-        println!("0. Wyjście");
-        println!("Wybór: ");
+        eprintln!();
+        eprintln!("Wybierz funkcję:");
+        eprintln!("1. Wczytaj plik z grafem");
+        //eprintln!("10. Wczytaj plik rbg323.atsp");
+        eprintln!("2. Wygeneruj losowy graf");
+        eprintln!("3. Algorytm genetyczny");
+        //eprintln!("30. Algorytm genetyczny ze specyficznymi parametrami");
+        eprintln!("0. Wyjście");
+        eprintln!("Wybór: ");
 
         //Wczytaj odpowiedź użytkownika
         io::stdin().read_line(&mut selected_number).expect(
@@ -38,10 +37,10 @@ fn main() {
 
         //Podejmij akcję w zalezności od wyboru użytkownika
         match selected_number {
-            0 => std::process::exit(0x0),
+            0 => std::process::exit(0),
             1 => {
                 let mut file_name = String::new();
-                println!("Nazwa pliku: ");
+                eprintln!("Nazwa pliku: ");
                 io::stdin().read_line(&mut file_name).expect(
                     "Błąd wejścia/wyjścia",
                 );
@@ -52,7 +51,7 @@ fn main() {
             }
             2 => {
                 let mut number_of_nodes: String = String::new();
-                println!("Ilość wierzchołków:");
+                eprintln!("Ilość wierzchołków:");
                 io::stdin().read_line(&mut number_of_nodes).expect(
                     "Błąd wejścia/wyjścia",
                 );
@@ -65,7 +64,7 @@ fn main() {
             }
             3 => {
                 if matrix.is_empty() {
-                    println!("Najpierw wczytaj graf z pliku!");
+                    eprintln!("Najpierw wczytaj graf z pliku!");
                 } else {
                     solve_genetic(&mut matrix)
                 }
@@ -76,29 +75,36 @@ fn main() {
 //                let mut file_name = "data/br17.atsp";
 
                 matrix = file_reader::read_any_file(String::from(file_name.trim()));
-                println!("Wczytano plik data/rbg323.atsp ");
+                eprintln!("Wczytano plik data/rbg323.atsp ");
             }
 
             30 => {
-                solve_genetic_now(&mut matrix,
-                                  1000,
-                                  25,
-                                  100,
-                                  0.02f32,
-                                  0.8f32,
-                                  120,
-                                  1,
-                                  1)
+                // iteracje, rozm. popul., ilość par dzieci, prawd. mut., prawd. krzyż., czas, typ kros., typ mut.
+
+                matrix = file_reader::read_any_file("data/ftv47.atsp".to_string());
+
+                solve_genetic_now(&mut matrix, 1000, 50, 25, 0.01f32, 0.8f32, 120, 1, 1); eprintln!("1/12");
+                solve_genetic_now(&mut matrix, 1000, 50, 25, 0.01f32, 0.8f32, 120, 1, 2); eprintln!("2/12");
+                solve_genetic_now(&mut matrix, 1000, 50, 25, 0.01f32, 0.8f32, 120, 2, 1); eprintln!("3/12");
+                solve_genetic_now(&mut matrix, 1000, 50, 25, 0.01f32, 0.8f32, 120, 2, 2); eprintln!("4/12");
+                solve_genetic_now(&mut matrix, 1000, 100, 50, 0.01f32, 0.8f32, 120, 1, 1); eprintln!("5/12");
+                solve_genetic_now(&mut matrix, 1000, 100, 50, 0.01f32, 0.8f32, 120, 1, 2); eprintln!("6/12");
+                solve_genetic_now(&mut matrix, 1000, 100, 50, 0.01f32, 0.8f32, 120, 2, 1); eprintln!("7/12");
+                solve_genetic_now(&mut matrix, 1000, 100, 50, 0.01f32, 0.8f32, 120, 2, 2); eprintln!("8/12");
+                solve_genetic_now(&mut matrix, 1000, 150, 75, 0.01f32, 0.8f32, 120, 1, 1); eprintln!("9/12");
+                solve_genetic_now(&mut matrix, 1000, 150, 75, 0.01f32, 0.8f32, 120, 1, 2); eprintln!("10/12");
+                solve_genetic_now(&mut matrix, 1000, 150, 75, 0.01f32, 0.8f32, 120, 2, 1); eprintln!("11/12");
+                solve_genetic_now(&mut matrix, 1000, 150, 75, 0.01f32, 0.8f32, 120, 2, 2); eprintln!("12/12");
             }
 
-            _ => println!("Niepoprawna wartość!"),
+            _ => eprintln!("Niepoprawna wartość!"),
         }
     }
 
     fn solve_genetic(matrix: &mut Vec<Vec<i32>>) {
 
         // Iteracje
-        println!("Iteracje:");
+        eprintln!("Iteracje:");
         let mut iterations: String = String::new();
         io::stdin().read_line(&mut iterations).expect(
             "Błąd wejścia/wyjścia",
@@ -106,7 +112,7 @@ fn main() {
         let iterations: i32 = iterations.trim().parse().expect("Błędna wartość");
 
         // Ilość elementów populacji
-        println!("Rozmiar populacji:");
+        eprintln!("Rozmiar populacji:");
         let mut population_size: String = String::new();
         io::stdin().read_line(&mut population_size).expect(
             "Błąd wejścia/wyjścia",
@@ -114,7 +120,7 @@ fn main() {
         let population_size: i32 = population_size.trim().parse().expect("Błędna wartość");
 
         // Ilość par dzieci
-        println!("Ilość par dzieci:");
+        eprintln!("Ilość par dzieci:");
         let mut children_pairs_size: String = String::new();
         io::stdin().read_line(&mut children_pairs_size).expect(
             "Błąd wejścia/wyjścia",
@@ -124,7 +130,7 @@ fn main() {
         );
 
         // Prawdopodobieństwo mutacji
-        println!("Prawdopodobieństwo mutacji:");
+        eprintln!("Prawdopodobieństwo mutacji:");
         let mut mutation_probability: String = String::new();
         io::stdin().read_line(&mut mutation_probability).expect(
             "Błąd wejścia/wyjścia",
@@ -134,7 +140,7 @@ fn main() {
         );
 
         // Prawdopodobieństwo krzyżowania
-        println!("Prawdopodobieństwo krzyżowania:");
+        eprintln!("Prawdopodobieństwo krzyżowania:");
         let mut crossing_probability: String = String::new();
         io::stdin().read_line(&mut crossing_probability).expect(
             "Błąd wejścia/wyjścia",
@@ -144,7 +150,7 @@ fn main() {
         );
 
         // Maksymalny czas
-        println!("Maksymalny czas:");
+        eprintln!("Maksymalny czas:");
         let mut max_time: String = String::new();
         io::stdin().read_line(&mut max_time).expect(
             "Błąd wejścia/wyjścia",
@@ -154,9 +160,9 @@ fn main() {
         // typ krzyzowania
         let mut crossing_type_integer: String = String::new();
         loop {
-            println!("Typ krzyzowania:");
-            println!("[1] PMX");
-            println!("[2] EX");
+            eprintln!("Typ krzyzowania:");
+            eprintln!("[1] OX");
+            eprintln!("[2] EX");
             io::stdin().read_line(&mut crossing_type_integer).expect(
                 "Błąd wejścia/wyjścia",
             );
@@ -177,11 +183,11 @@ fn main() {
         // typ mutowania
         let mut mutation_type_integer: String = String::new();
         loop {
-            println!("Typ mutacji:");
-            println!("[1] SWAP");
-            println!("[10] GREAT SWAP");
-            println!("[2] INSERT");
-            println!("[20] GREAT INSERT");
+            eprintln!("Typ mutacji:");
+            eprintln!("[1] SWAP");
+            //eprintln!("[10] GREAT SWAP");
+            eprintln!("[2] INSERT");
+            //eprintln!("[20] GREAT INSERT");
             io::stdin().read_line(&mut mutation_type_integer).expect(
                 "Błąd wejścia/wyjścia",
             );
@@ -199,8 +205,6 @@ fn main() {
         let mutation_type_integer: i32 = mutation_type_integer.trim().parse().expect(
             "Błędna wartość"
         );
-
-
 
         // Rozwiązanie z parametrami
         genetic_algorithm::solve(
@@ -226,23 +230,23 @@ fn main() {
                          crossing_type_integer: i32,
                          mutation_type_integer: i32)
     {
-        println!("Wykonywanie algorytmu dla parametrow.
-         iteracje: {0}
-         populacja: {1}
-         pary dzieci: {2}
-         szansa mutacji: {3}
-         szansa krzyżowania: {4}
-         czas: {5}
-         typ krzyzowania: {6}
-         typ mutowania: {7}",
-                 iterations,
-                 population_size,
-                 children_pairs_size,
-                 mutation_probability,
-                 crossing_probability,
-                 max_time,
-                 crossing_type_integer,
-                 mutation_type_integer);
+        // eprintln!("Wykonywanie algorytmu dla parametrow.
+        //  iteracje: {0}
+        //  populacja: {1}
+        //  pary dzieci: {2}
+        //  szansa mutacji: {3}
+        //  szansa krzyżowania: {4}
+        //  czas: {5}
+        //  typ krzyzowania: {6}
+        //  typ mutowania: {7}",
+        //          iterations,
+        //          population_size,
+        //          children_pairs_size,
+        //          mutation_probability,
+        //          crossing_probability,
+        //          max_time,
+        //          crossing_type_integer,
+        //          mutation_type_integer);
 
         genetic_algorithm::solve(
             matrix,
@@ -254,6 +258,8 @@ fn main() {
             max_time,
             crossing_type_integer,
             mutation_type_integer
-        )
+        );
+
+        
     }
 }

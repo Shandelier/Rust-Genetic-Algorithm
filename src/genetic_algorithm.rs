@@ -14,8 +14,6 @@ enum CrossingType {
 #[derive(Clone, Copy)]
 enum MutationType {
     SWAP,
-    GREAT_SWAP,
-    GREAT_INSERT,
     INSERT,
 }
 
@@ -37,7 +35,7 @@ pub fn solve(
         1 => crossing_type = CrossingType::PMX,
         2 => crossing_type = CrossingType::EX,
         _ => {
-            println!("Bledny typ krzyzowania!");
+            println!("Błędny typ krzyżowania!");
             crossing_type = CrossingType::PMX;
         },
     }
@@ -46,10 +44,8 @@ pub fn solve(
     match mutation_type_integer {
         1 => mutation_type = MutationType::SWAP,
         2 => mutation_type = MutationType::INSERT,
-        10 => mutation_type = MutationType::GREAT_SWAP,
-        20 => mutation_type = MutationType::GREAT_INSERT,
         _ => {
-            println!("Bledny typ krzyzowania!");
+            println!("Błędny typ krzyżowania!");
             mutation_type = MutationType::SWAP;
         }
     }
@@ -84,6 +80,7 @@ pub fn solve(
     // Pętla wykonująca całość algorytmu
     for iteration in 0..iterations {
         // Określenie populacji, która będzie rodzicami dla kolejnego pokolenia
+        // Ocena osobników + selekcja
         parents_population = find_parents_in_population(
             &population,
             &population_size,
@@ -92,6 +89,7 @@ pub fn solve(
         );
 
         // Wyznaczenie dzieci jako populacji tworzonej z populacji rodziców
+        // Krzyżowanie + mutacja
         for _i in 0..children_pairs_size {
             let children_pair = generate_children_pair(&parents_population, crossing_probability, mutation_probability, crossing_type, mutation_type);
             children_population.push(children_pair[0].clone());
@@ -105,36 +103,39 @@ pub fn solve(
             population_size as usize,
             &children_population,
         );
+
         // Wyczyszczenie populacji dzieci
         children_population = Vec::new();
 
         // Obliczenie kosztu ścieżki najlepszego elementu w populacji
         current_best_solution = get_best_population_element_value(&matrix, &population);
 
-        print!("[{}] {}", &iteration, &current_best_solution);
+        //print!("[{}] {}", &iteration, &current_best_solution);
+        print!("{},", &current_best_solution);
 
         // Zapisanie wyniku, jeżeli jest lepszy niż aktualny
         if current_best_solution < best_solution {
             best_solution = current_best_solution.clone();
             best_element = population[0].clone();
-            print!(" - poprawa!");
+            //print!(" - poprawa!");
         }
-        println!();
+        //println!();
 
         if timer_start.to(time::PreciseTime::now()).num_seconds() >= max_time_in_seconds as i64 {
-            println!("Zakonczono z powodu przekroczenia czasu: ");
+            //println!("Przekroczono czas.");
             break;
         }
     }
-
-    println!("Wynik:");
-    println!("{}", best_solution);
-    println!("{:?}", best_element);
+    println!("");
+    //println!("Wynik:");
+    //println!("{}", best_solution);
+    //println!("{:?}", best_element);
+    //println!("Wynik: {}", best_solution);
 }
 
 // Funckja generująca w losowy sposób populację początkową
 fn create_starting_population(population_size: &i32, nodes: &Vec<i32>) -> Vec<Vec<i32>> {
-    println!("Generowanie populacji początkowej, rozmiar: {}", &population_size);
+    //println!("Generowanie populacji początkowej, rozmiar: {}", &population_size);
 
     // Tablica dwuwymiarowa przechowująca gotową populację
     let mut population: Vec<Vec<i32>> = Vec::new();
@@ -149,14 +150,6 @@ fn create_starting_population(population_size: &i32, nodes: &Vec<i32>) -> Vec<Ve
 
         // Przelosowanie elementu
         rand::thread_rng().shuffle(&mut single_population_element);
-
-        // // Przywrócenie 0 na pierwszą pozycję wektora
-        // for j in 0..(single_population_element.len()) {
-        //     if single_population_element[j] == 0 {
-        //         single_population_element[j] = single_population_element[0].clone();
-        //         single_population_element[0] = 0;
-        //     }
-        // }
 
         population.push(single_population_element);
     }
@@ -173,7 +166,6 @@ fn regenerate_population(
     population_size: usize,
     population_children: &Vec<Vec<i32>>,
 ) -> Vec<Vec<i32>> {
-
     // Zmienna będzie przechowywała elementy nowej populacji
     let mut new_population: Vec<Vec<i32>> = Vec::new();
 
@@ -192,6 +184,15 @@ fn regenerate_population(
 
     // Iteracja po całym docelowym rozmiarze populacji
     for _i in 0..population_size {
+        // Jeżeli pusty jest zbiór rodziców, ale zbiór dzieci ma jescze elementy
+        // Dodajemy do nowej populacji element zbioru dzieci
+        if !current_population_children.is_empty() && current_population.is_empty() {
+            new_population.push(
+                current_population_children[current_population_children.len() - 1].clone(),
+            );
+            current_population_children.pop();
+            continue;
+        }
 
         // Jeżeli pusty jest zbiór dzieci, ale zbiór rodziców ma jeszcze elementy
         // Dodajemy do nowej populacji alement zbioru rodziców
@@ -201,30 +202,15 @@ fn regenerate_population(
             continue;
         }
 
-        // Jeżeli pusty jest zbiór rodziców, ale zbiór dzieci ma jescze elementy
-        // Dodajemy do nowej populacji alement zbioru dzieci
-        if !current_population_children.is_empty() && current_population.is_empty() {
-            new_population.push(
-                current_population_children[current_population_children.len() - 1].clone(),
-            );
-            current_population_children.pop();
-            continue;
-        }
-
         // Jeżeli obie populacje zawierają jeszcze elementy
         // Wybieramy ten, o korzystniejszej wartości funkcji przystosowania
         // Można sprawdzać po indeksach tablicy, bo wcześniej je sortowaliśmy
         if path_evaluation_value(matrix, &current_population_children[current_population_children.len() - 1])
-            < path_evaluation_value(matrix, &current_population[current_population.len() - 1])
-        {
+            < path_evaluation_value(matrix, &current_population[current_population.len() - 1]) {
             new_population.push(current_population[current_population.len() - 1].clone());
             current_population.pop();
-        }
-        else {
-            new_population.push(
-                current_population_children[current_population_children.len() - 1]
-                    .clone(),
-            );
+        } else {
+            new_population.push(current_population_children[current_population_children.len() - 1].clone());
             current_population_children.pop();
         }
     }
@@ -314,7 +300,7 @@ fn path_value(matrix: &Vec<Vec<i32>>, permutation: &Vec<i32>) -> i32 {
     }
 
     // Zwiększenie kosztu trasy o koszt powrotu do wierzchołka początkowego
-    value = value + matrix[previous_node][0];
+    value = value + matrix[previous_node][permutation[0] as usize];
 
     // Zwrot obliczonego kosztu trasy
     return value;
@@ -326,7 +312,7 @@ fn path_evaluation_value(matrix: &Vec<Vec<i32>>, permutation: &Vec<i32>) -> i32 
     let path_value: i32 = path_value(&matrix, &permutation);
 
     // Maksymalna wartość kosztu
-    let  max_path_value: i32 = <i32>::max_value();
+    let max_path_value: i32 = <i32>::max_value();
 
     // Zwracana wartość jest różnicą pomiędzy maksimum a otrzymanym kosztem
     // Im większa wartość, tym lepszy wynik funkcji przystosowania
@@ -350,7 +336,7 @@ fn generate_children_pair(
     // Będą oni rodzicami pary osobników nowej populacji
     let mut parents_pair: Vec<Vec<i32>> = generate_parents_pair(&parents_population);
 
-    // Następnie następuje krzyżowanie osobników
+    // Następnie następuje próba krzyżowania osobników
     let random_float: f32 = rand::thread_rng().next_f32();
     if random_float <= crossing_probability {
         match crossing_type {
@@ -384,28 +370,18 @@ fn generate_children_pair(
             MutationType::INSERT => {
                 children_pair[0] = try_mutation_insert(children_pair[0].clone());
                 children_pair[1] = try_mutation_insert(children_pair[1].clone());
-            },
-
-            MutationType::GREAT_INSERT => {
-                children_pair[0] = try_great_mutation_swap(children_pair[0].clone());
-                children_pair[1] = try_great_mutation_swap(children_pair[1].clone());
-            }
-
-            MutationType::GREAT_SWAP => {
-                children_pair[0] = try_great_mutation_swap(children_pair[0].clone());
-                children_pair[1] = try_great_mutation_swap(children_pair[1].clone());
             }
         }
     }
 
-//    println!("  Syn: {:?}", &children_pair[0]);
-//    println!("  Córka: {:?}", &children_pair[1]);
+    check_path(&children_pair[0]);
+    check_path(&children_pair[1]);
 
     return children_pair;
 }
 
-// Zwraca parę dzieci po krzyżowaniu
-// Metodą Partially Matched Cross (PMX)
+// Zwraca potomka po krzyżowaniu 
+// metodą Partially-Matched Cross (PMX).
 fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>) -> Vec<i32> {
     let child_size: usize = parents_pair[0].len() as usize;
 
@@ -425,8 +401,8 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>) -> Vec<i32> {
     }
 
     // Sortowanie punktów krzyżowania
-    // Jeżeli pierwszy nastepuje po drugim
-    // Należy zamienić je miejscami
+    // Jeżeli pierwszy nastepuje po drugim,
+    // należy zamienić je miejscami
     if first_cross_point > second_cross_point {
         let temp_cross_point: usize = second_cross_point.clone();
         second_cross_point = first_cross_point.clone();
@@ -435,7 +411,7 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>) -> Vec<i32> {
 
     // Pierwsza pętla krzyżująca metodą PMX
     // Zamienia elementy dzieci w zakresie punktów krzyżowania
-    for i in (first_cross_point)..(second_cross_point) {
+    for i in first_cross_point..second_cross_point {
         child[i] = parents_pair[0][i].clone();
         swapped[parents_pair[0][i] as usize] = 1;
     }
@@ -456,14 +432,14 @@ fn cross_single_child_pmx(parents_pair: &Vec<Vec<i32>>) -> Vec<i32> {
     return child;
 }
 
-fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
-    -> Vec<i32> {
+fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>) -> Vec<i32> {
     // Rozmiar grafu i dziecka
     let graph_size: usize = (parents_pair[0].len() - 1) as usize;
+
     // Nowa para dzieci
     let mut child: Vec<i32> = Vec::new();
-    // Obliczenie ilości elementów w permutacji
-    // TWorzenie mapy (tablicy) połączeń w grafie
+
+    // Tworzenie mapy (tablicy) połączeń w grafie;
     // wiersze odpowiadają numerom wierzchołków
     let mut vertex_neighbour_map: Vec<Vec<i32>> = vec![Vec::new(); 1 + graph_size];
     let mut vertex_position: usize;
@@ -471,56 +447,84 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
     let mut check_duplicates: i32 = 0;
     let mut duplicate_position: usize = 0;
 
-
     // Tworzenie mapy sasiedztwa
     // for do przechodzenia po wierszach mapy sąsiedztwa
-    for vertex in 0..graph_size + 1 {
-        //println!("vertex: {}", vertex);
-        // for do wpisywania kolejnych elementów w wierszach mapy
-        for parent_index in 0..2 {
-            //println!("parent: {}", parent_index);
-            // znalezienie pozycji elementu o zadanej wartości w ścieżce
-            vertex_position = parents_pair[parent_index]
-                .iter()
-                .position(|&x| x == vertex as i32)
-                .unwrap()
-                .clone();
-            // mozliwe są skrajne przypadki –
-            // element bedzie na ostatniej lub pierwszej pozycji macierzy,
-            // tutaj je obsługujemy
-            if vertex_position == 0 {
-                //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
-                // 'lewy sasiad, potem prawy sasiad'
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size]);
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][1]);
+    // for vertex in 0..graph_size + 1 {
+    //     //println!("vertex: {}", vertex);
+    //     // for do wpisywania kolejnych elementów w wierszach mapy
+    //     for parent_index in 0..2 {
+    //         //println!("parent: {}", parent_index);
+    //         // znalezienie pozycji elementu o zadanej wartości w ścieżce
+    //         vertex_position = parents_pair[parent_index]
+    //             .iter()
+    //             .position(|&x| x == vertex as i32)
+    //             .unwrap()
+    //             .clone();
+    //         // mozliwe są skrajne przypadki –
+    //         // element bedzie na ostatniej lub pierwszej pozycji macierzy,
+    //         // tutaj je obsługujemy
+    //         if vertex_position == 0 {
+    //             // wpisywanie do wierszy kolejnych sasiadow wedle przyjętej kolejności:
+    //             // 'lewy sasiad, potem prawy sasiad'
+    //             vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size]);
+    //             vertex_neighbour_map[vertex].push(parents_pair[parent_index][1]);
+    //         } else if vertex_position == graph_size {
+    //             vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1]);
+    //             vertex_neighbour_map[vertex].push(parents_pair[parent_index][0]);
+    //         } else {
+    //             vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1]);
+    //             vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1]);
+    //         }
+    //     }
+    // }
+
+    for vertex in 0..(graph_size + 1) {
+        for parent in 0..2 {
+            let city = parents_pair[parent][vertex] as usize;
+
+            let previous;
+            let next;
+
+            if vertex == 0 {
+                previous = parents_pair[parent][graph_size];
+                next = parents_pair[parent][1];
+            } else if vertex == graph_size {
+                previous = parents_pair[parent][graph_size - 1];
+                next = parents_pair[parent][0];
+            } else {
+                previous = parents_pair[parent][vertex - 1];
+                next = parents_pair[parent][vertex + 1];
             }
-            else if vertex_position == graph_size {
-                //println!("Dupa ostatnia");
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1]);
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][0]);
-            }
-            else {
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1]);
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1]);
-            }
+
+            //if !vertex_neighbour_map[city].contains(&previous) {
+                vertex_neighbour_map[city].push(previous);
+            //}
+            //if !vertex_neighbour_map[city].contains(&next) {
+                vertex_neighbour_map[city].push(next);
+            //}
         }
     }
 
     // zaczynamy od wierzcholka 0
     let mut selected_vertex: i32 = 0;
+
     // zmienne do sprawdzania duplikatow
     let mut dup_value: i32;
     let mut dup_position: Option<usize>;
     let mut dup_random: Option<usize>;
     let mut dup_found: bool = false;
+
     // zmienna do losowania wierzcholkow
     let mut random_position: i32;
+
     // wybrano najlepszy wierzcholek do drogi
     let mut champion_chosen: bool;
+
     // macierz krtkosci sciezki
     let mut shortest: i32;
     let mut position_of_shortest: usize = 666666;
-    // wybieranie drogi do puki nie wypelnilismy calej macierzy potomka
+
+    // wybieranie drogi dopoki nie wypelnilismy calej macierzy potomka
     loop {
         // dołączenie wierzchołka do drogi
         child.push(selected_vertex.clone());
@@ -535,10 +539,10 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
             dup_position = vertex_neighbour_map[vertex].iter().position(|&x| x == selected_vertex);
             if dup_position.is_some() {
                 vertex_neighbour_map[vertex].remove(dup_position.unwrap());
-                dup_position = vertex_neighbour_map[vertex].iter().position(|&x| x == selected_vertex);
-                if dup_position.is_some() {
-                    vertex_neighbour_map[vertex].remove(dup_position.unwrap());
-                }
+                // dup_position = vertex_neighbour_map[vertex].iter().position(|&x| x == selected_vertex);
+                // if dup_position.is_some() {
+                //     vertex_neighbour_map[vertex].remove(dup_position.unwrap());
+                // }
             }
             dup_position = None;
         }
@@ -558,15 +562,15 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
             }
         }
 
-        else if vertex_neighbour_map[selected_vertex as usize].len() == 1 && !champion_chosen {
+        else if !champion_chosen && vertex_neighbour_map[selected_vertex as usize].len() == 1 {
             selected_vertex = vertex_neighbour_map[selected_vertex as usize][0].clone();
         }
 
-        else if vertex_neighbour_map[selected_vertex as usize].len() as i32 >= 2 && !champion_chosen {
-            for collumn in 0..vertex_neighbour_map[selected_vertex as usize].len() - 1 {
-                for element in collumn..vertex_neighbour_map[selected_vertex as usize].len() - 1 {
-                    if vertex_neighbour_map[selected_vertex as usize][collumn] == vertex_neighbour_map[selected_vertex as usize][element + 1] {
-                        selected_vertex = vertex_neighbour_map[selected_vertex as usize][collumn].clone();
+        else if !champion_chosen && vertex_neighbour_map[selected_vertex as usize].len() as i32 >= 2  {
+            for column in 0..vertex_neighbour_map[selected_vertex as usize].len() - 1 {
+                for element in column..vertex_neighbour_map[selected_vertex as usize].len() - 1 {
+                    if vertex_neighbour_map[selected_vertex as usize][column] == vertex_neighbour_map[selected_vertex as usize][element + 1] {
+                        selected_vertex = vertex_neighbour_map[selected_vertex as usize][column].clone();
                         champion_chosen = true;
                         break;
                     }
@@ -578,14 +582,15 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
             if !champion_chosen {
                 // szukaie wierzcholka o najkrotszej liscie
                 shortest = i32::max_value();
-                for collumn in 0..vertex_neighbour_map[selected_vertex as usize].len() {
-                    if shortest > vertex_neighbour_map[vertex_neighbour_map[selected_vertex as usize][collumn] as usize].len() as i32 {
-                        position_of_shortest = collumn;
+                for column in 0..vertex_neighbour_map[selected_vertex as usize].len() {
+                    if shortest > vertex_neighbour_map[vertex_neighbour_map[selected_vertex as usize][column] as usize].len() as i32 {
+                        position_of_shortest = column;
 
                     }
                 }
-                selected_vertex = vertex_neighbour_map[selected_vertex as usize][position_of_shortest].clone();
+
                 // wybranie wierzcholka o najkrotszej liscie sasiadow
+                selected_vertex = vertex_neighbour_map[selected_vertex as usize][position_of_shortest].clone();
             }
         }
     }
@@ -595,8 +600,7 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
 
 // Funkcja generuje losową parę rodziców z populacji
 // Zapobiega wylosowaniu dwukrotnie tego samego rodzica
-fn generate_parents_pair(parents_population: &Vec<Vec<i32>>
-) -> Vec<Vec<i32>> {
+fn generate_parents_pair(parents_population: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     let mut parents_pair: Vec<Vec<i32>> = Vec::new();
     let mut father_index: usize = 0;
     let mut mother_index: usize = 0;
@@ -608,6 +612,7 @@ fn generate_parents_pair(parents_population: &Vec<Vec<i32>>
         father_index = rand::thread_rng().gen_range(0, parents_population.len()) as usize;
         mother_index = rand::thread_rng().gen_range(0, parents_population.len()) as usize;
     }
+
     // Po określeniu indeksów osobników, sa one dodawane do tablicy
     parents_pair.push(parents_population[father_index].clone());
     parents_pair.push(parents_population[mother_index].clone());
@@ -617,18 +622,18 @@ fn generate_parents_pair(parents_population: &Vec<Vec<i32>>
 
 // Metoda zamienia dwa wybrane elementy w populacji
 // Zwraca permutację, jako wektor z zamienionymi elementami
-fn swap_elements_in_permutation(
-    permutation: &Vec<i32>,
-    first_element_index: usize,
-    second_element_index: usize,
-) -> Vec<i32> {
-
+fn swap_elements_in_permutation(permutation: &Vec<i32>, 
+    first_element_index: usize, 
+    second_element_index: usize) -> Vec<i32> 
+{
     // Nowa populacja, będąca klonem starej
     let mut new_population: Vec<i32> = permutation.clone();
+
     // Swap elementów w nowej populacji
-    let  saved_element: i32 = permutation[first_element_index];
+    let saved_element: i32 = permutation[first_element_index];
     new_population[first_element_index] = permutation[second_element_index];
     new_population[second_element_index] = saved_element;
+
     // Populacja po zamianie zwracana jako wynik
     return new_population;
 }
@@ -780,4 +785,14 @@ fn generate_randomized_target_value(permutation_evaluation_sum: &i64) -> i64 {
 // Metoda oblicza koszt ścieżki najlepszego elementu w populacji
 fn get_best_population_element_value(matrix: &Vec<Vec<i32>>, population: &Vec<Vec<i32>>) -> i32 {
     return <i32>::max_value() - path_evaluation_value(&matrix, &population[0])
+}
+
+fn check_path(path: &Vec<i32>) {
+    let mut sorted_path = path.clone();
+    sorted_path.sort();
+    for i in 1..sorted_path.len() {
+        if sorted_path[i - 1] == sorted_path[i] {
+            panic!("Ścieżka zawiera powtórzenia!");
+        }
+    }
 }
