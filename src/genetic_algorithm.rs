@@ -484,17 +484,17 @@ fn cross_single_child_ex(parents_pair: &Vec<Vec<i32>>)
             if vertex_position == 0 {
                 //wpisywanie do wierszy klejnych sasiadow wedle przyjętej kolejności:
                 // 'lewy sasiad, potem prawy sasiad'
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size].clone());
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][1].clone());
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size]);
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][1]);
             }
             else if vertex_position == graph_size {
                 //println!("Dupa ostatnia");
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1].clone());
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][0].clone());
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][graph_size - 1]);
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][0]);
             }
             else {
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1].clone());
-                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1].clone());
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position - 1]);
+                vertex_neighbour_map[vertex].push(parents_pair[parent_index][vertex_position + 1]);
             }
         }
     }

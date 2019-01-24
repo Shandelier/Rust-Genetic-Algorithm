@@ -144,7 +144,7 @@ fn main() {
         // typ krzyzowania
         let mut crossing_type_integer: String = String::new();
         loop {
-            println!("Typ mutacji:");
+            println!("Typ krzyzowania:");
             println!("[1] PMX");
             println!("[2] EX");
             io::stdin().read_line(&mut crossing_type_integer).expect(
