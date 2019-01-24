@@ -5,7 +5,6 @@ mod genetic_algorithm;
 
 use std::io;
 
-
 fn main() {
     println!();
     println!("Projektowanie Efektywnych Algorytmów - Zadanie 3");
@@ -82,12 +81,13 @@ fn main() {
 
             30 => {
                 solve_genetic_now(&mut matrix,
-                                  10,
-                                  50,
+                                  1000,
                                   25,
-                                  0.01f32,
+                                  100,
+                                  0.02f32,
+                                  0.8f32,
                                   120,
-                                  2,
+                                  1,
                                   1)
             }
 
@@ -95,7 +95,7 @@ fn main() {
         }
     }
 
-    fn solve_genetic(mut matrix: &mut Vec<Vec<i32>>) {
+    fn solve_genetic(matrix: &mut Vec<Vec<i32>>) {
 
         // Iteracje
         println!("Iteracje:");
@@ -130,6 +130,16 @@ fn main() {
             "Błąd wejścia/wyjścia",
         );
         let mutation_probability: f32 = mutation_probability.trim().parse().expect(
+            "Błędna wartość",
+        );
+
+        // Prawdopodobieństwo krzyżowania
+        println!("Prawdopodobieństwo krzyżowania:");
+        let mut crossing_probability: String = String::new();
+        io::stdin().read_line(&mut crossing_probability).expect(
+            "Błąd wejścia/wyjścia",
+        );
+        let crossing_probability: f32 = crossing_probability.trim().parse().expect(
             "Błędna wartość",
         );
 
@@ -175,10 +185,10 @@ fn main() {
             io::stdin().read_line(&mut mutation_type_integer).expect(
                 "Błąd wejścia/wyjścia",
             );
-            if (mutation_type_integer.trim() == "1"
-                || mutation_type_integer.trim() == "2"
-                || mutation_type_integer.trim() == "10"
-                || mutation_type_integer.trim() == "20")
+            if mutation_type_integer.trim() == "1"
+               || mutation_type_integer.trim() == "2"
+               || mutation_type_integer.trim() == "10"
+               || mutation_type_integer.trim() == "20"
             {
                 break;
             }
@@ -199,6 +209,7 @@ fn main() {
             population_size,
             children_pairs_size,
             mutation_probability,
+            crossing_probability,
             max_time,
             crossing_type_integer,
             mutation_type_integer
@@ -210,22 +221,25 @@ fn main() {
                          population_size: i32,
                          children_pairs_size: i32,
                          mutation_probability: f32,
+                         crossing_probability: f32,
                          max_time: i32,
                          crossing_type_integer: i32,
                          mutation_type_integer: i32)
     {
-        println!("Wykonywanie algorytmu dla parametrow.\
-         iteracje: {0}\
-         populacja: {1}\
-         pary dzieci: {2}\
-         szansa mutacji: {3}\
-         czas: {4}\
-         typ krzyzowania: {5},
-         typ mutowania: {6}",
+        println!("Wykonywanie algorytmu dla parametrow.
+         iteracje: {0}
+         populacja: {1}
+         pary dzieci: {2}
+         szansa mutacji: {3}
+         szansa krzyżowania: {4}
+         czas: {5}
+         typ krzyzowania: {6}
+         typ mutowania: {7}",
                  iterations,
                  population_size,
                  children_pairs_size,
                  mutation_probability,
+                 crossing_probability,
                  max_time,
                  crossing_type_integer,
                  mutation_type_integer);
@@ -236,6 +250,7 @@ fn main() {
             population_size,
             children_pairs_size,
             mutation_probability,
+            crossing_probability,
             max_time,
             crossing_type_integer,
             mutation_type_integer
